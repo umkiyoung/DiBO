@@ -27,7 +27,6 @@ conda activate dibo
 
 # Mujoco Installation (Mujoco should be already placed in ~/.mujoco)
 pip install Cython==0.29.36 numpy==1.22.0 mujoco_py==2.1.2.14
-# For Luna Landing
 pip3 install box2d-py Box2D
 # Mujoco Compile
 python -c "import mujoco_py"
@@ -45,9 +44,10 @@ pip install celer
 pip install "sparse-ho @ https://github.com/QB3/sparse-ho/archive/master.zip"
 pip install libsvmdata
 pip install pygame
-```
 
-### TODO
+# If halfcheetah doesn't work:
+pip install --upgrade gym
+```
 
 Run examples:
 
