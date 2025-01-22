@@ -1,4 +1,4 @@
-export PYTHONPATH=/home/uky/repos_python/Research/PIBO:$PYTHONPATH
+export PYTHONPATH=/home/uky/repos_python/Research/DIBO:$PYTHONPATH
 #Ackley Rastrigin Levy Rosenbrock
 for task in Ackley; do
     for dim in 200; do

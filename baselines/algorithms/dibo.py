@@ -54,8 +54,8 @@ if __name__ == "__main__":
     import os
     if not os.path.exists("./baselines/results"):
         os.makedirs("./baselines/results")
-    if not os.path.exists("./baselines/results/pibo"):
-        os.makedirs("./baselines/results/pibo")
+    if not os.path.exists("./baselines/results/dibo"):
+        os.makedirs("./baselines/results/dibo")
     wandb.init(project="posterior-inference-bo",
                config=vars(args))
     
@@ -285,10 +285,10 @@ if __name__ == "__main__":
             save_np = Y_total[:save_len]
         
             if args.abalation == "":
-                if not os.path.exists(f"./baselines/results/pibo"):
-                    os.makedirs(f"./baselines/results/pibo", exist_ok=True)
+                if not os.path.exists(f"./baselines/results/dibo"):
+                    os.makedirs(f"./baselines/results/dibo", exist_ok=True)
                 np.save(
-                    f"./baselines/results/pibo/pibo_{task}_{dim}_{seed}_{n_init}_{args.batch_size}_{args.buffer_size}_{args.local_search_epochs}_{args.max_evals}_{save_len}.npy",
+                    f"./baselines/results/dibo/dibo_{task}_{dim}_{seed}_{n_init}_{args.batch_size}_{args.buffer_size}_{args.local_search_epochs}_{args.max_evals}_{save_len}.npy",
                     np.array(save_np),
                 )
             else:

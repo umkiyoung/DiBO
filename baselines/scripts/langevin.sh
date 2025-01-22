@@ -1,4 +1,4 @@
-export PYTHONPATH=/home/uky/repos_python/Research/PIBO:$PYTHONPATH
+export PYTHONPATH=/home/uky/repos_python/Research/DIBO:$PYTHONPATH
 
 # Langevin only available to 200d due to memory constraints
 

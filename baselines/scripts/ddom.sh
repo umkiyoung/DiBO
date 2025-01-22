@@ -1,4 +1,4 @@
-export PYTHONPATH=/home/uky/repos_python/Research/PIBO:$PYTHONPATH
+export PYTHONPATH=/home/uky/repos_python/Research/DIBO:$PYTHONPATH
 
 # for seed in 0 1 2 3; do
 #    CUDA_VISIBLE_DEVICES=0 python baselines/algorithms/ddom.py --task Ackley --dim 200 --batch_size 100\

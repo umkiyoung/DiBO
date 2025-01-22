@@ -1,4 +1,4 @@
-export PYTHONPATH=/home/uky/repos_python/Research/PIBO:$PYTHONPATH
+export PYTHONPATH=/home/uky/repos_python/Research/DIBO:$PYTHONPATH
 
 # num_epochs=200
 # n_init=200

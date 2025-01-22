@@ -1,4 +1,4 @@
-export PYTHONPATH=/home/uky/repos_python/Research/PIBO:$PYTHONPATH
+export PYTHONPATH=/home/uky/repos_python/Research/DIBO:$PYTHONPATH
 
 # for seed in 0 1 2 3; do
 #    CUDA_VISIBLE_DEVICES=1 python baselines/algorithms/mcmcbo.py --task Ackley --dim 200 --tr_num 1 --batch_size 100\

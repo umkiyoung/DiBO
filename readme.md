@@ -1,17 +1,14 @@
-# Scalable Black-Box Optimization via Amortized Diffusion Posterior (PIBO)
-
-Repository for Scalable Black-Box Optimization via
-Amortized Diffusion Posterior a.k.a Posterior Inference Blackbox Optimization (PIBO)
+# Diffusion Models Solve High-dimensional Black-box Optimization (DiBO)
 
 ## Installation Guide
 
-To ensure that the PIBO repository is included in your Python path, add the following line to your shell configuration file (e.g., `.bashrc`, `.zshrc`):
+To ensure that the DiBO repository is included in your Python path, add the following line to your shell configuration file (e.g., `.bashrc`, `.zshrc`):
 ```bash
 nano ~./bashrc #open shell configuration
 ```
 ```bash
 #Example:
-export PYTHONPATH=/home/uky/repos_python/Research/PIBO:$PYTHONPATH
+export PYTHONPATH=/home/name/DIBO:$PYTHONPATH
 ```
 
 After adding the line, reload the shell configuration:
@@ -20,13 +17,13 @@ After adding the line, reload the shell configuration:
 source ~/.bashrc  # or source ~/.zshrc
 ```
 
-Or add lines ```export PYTHONPATH=/home/uky/repos_python/Research/PIBO:$PYTHONPATH```  the top of the [baselines/scripts/pibo](baselines/scripts/pibo.sh) files.
+Or add lines ```export PYTHONPATH=/home/name/DIBO:$PYTHONPATH```  the top of the [baselines/scripts/dibo](baselines/scripts/dibo.sh) files.
 
 ### Environment settings
 ```bash
 # Create conda environment
-conda create -n pibo python=3.9 -y
-conda activate pibo
+conda create -n dibo python=3.9 -y
+conda activate dibo
 
 # Mujoco Installation (Mujoco should be already placed in ~/.mujoco)
 pip install Cython==0.29.36 numpy==1.22.0 mujoco_py==2.1.2.14
@@ -55,7 +52,7 @@ pip install pygame
 Run examples:
 
 ```bash
-sh baselines/scripts/pibo.sh
+sh baselines/scripts/dibo.sh
 ```
 
 All the settings are written in the [baselines/scripts](baselines/scripts) folder.
