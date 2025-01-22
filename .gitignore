@@ -1,0 +1,20 @@
+# Ignore numpy binary files
+*.npy
+*.pkl
+# Ignore the .vscode folder
+.vscode/
+
+# Ignore the wandb folder
+wandb/
+cma-baxus_results/
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Temporary files
+*.log
+*.tmp
