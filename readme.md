@@ -2,7 +2,7 @@
 
 ## Installation Guide
 
-To ensure that the DiBO repository is included in your Python path, add the following line to your shell configuration file (e.g., `.bashrc`, `.zshrc`):
+To ensure that the DIBO repository is included in your Python path, add the following line to your shell configuration file (e.g., `.bashrc`, `.zshrc`):
 ```bash
 nano ~./bashrc #open shell configuration
 ```
