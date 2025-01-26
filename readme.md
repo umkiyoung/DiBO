@@ -1,4 +1,4 @@
-# Diffusion Models Solve High-dimensional Black-box Optimization (DiBO)
+# Posterior Inference with Diffusion Models for High-dimensional Black-box Optimization (DiBO)
 
 ## Installation Guide
 
@@ -37,8 +37,8 @@ pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --e
 # Additional Dependencies
 pip install botorch==0.6.4 gpytorch==1.6.0
 pip install gym==0.13.1 attrdict==2.0.1 wandb==0.15.3 matplotlib==3.7.5
-pip install pandas==1.5.3 scikit-learn==1.2.2 tqdm==4.64.1
-
+pip install pandas==1.5.3 scikit-learn==1.2.2 tqdm==4.64.1 
+pip install torchdiffeq
 # Lasso Env
 pip install celer
 pip install "sparse-ho @ https://github.com/QB3/sparse-ho/archive/master.zip"

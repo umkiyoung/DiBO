@@ -34,12 +34,10 @@ if __name__ == "__main__":
     parser.add_argument("--proxy_hidden_dim", type=int, default=256)
     parser.add_argument("--gamma", type=float, default=1.0)
     parser.add_argument("--num_ensembles", type=int, default=5)
-    parser.add_argument("--reweighting", type=str, default="exp") # exp, uniform, value, rank
     parser.add_argument("--filtering", type=str, default='True') # True, False
     parser.add_argument("--num_proposals", type=int, default=10)
     parser.add_argument("--training_posterior", type=str, default='both') # both, on, off
-    parser.add_argument("--uncertainty_estimation", type=str, default='ensemble') # ensemble, dropout, None
-    parser.add_argument("--abalation", type=str, default="")
+    parser.add_argument("--ablation", type=str, default="")
     parser.add_argument("--test_mode", type=str, default="False")
     args = parser.parse_args()
     if args.test_mode == "True":
@@ -91,56 +89,27 @@ if __name__ == "__main__":
         # Re-weighting for the training set (it seems cruical for the performance)
         # Prior implementation is for offline setting, so we should consider low-scoring regions to prevent deviation from the offline dataset
         # However, it is not necessary for online setting
-        if args.reweighting == "uniform":
-            weights = torch.ones_like(test_function.Y.squeeze())
-        elif args.reweighting == "value":
-            weights = get_value_based_weights(test_function.Y.cpu().numpy(), temp="90")
-            weights = torch.tensor(weights, dtype=dtype, device=device).squeeze()
-        elif args.reweighting == "rank":
-            weights = get_rank_based_weights(test_function.Y.squeeze().cpu().numpy())
-        else: #TODO Ours. exp.
-            weights = torch.exp((test_function.Y.squeeze() - test_function.Y.mean()) / (test_function.Y.std() + 1e-7))
-            
-        # weights = torch.ones_like(test_function.Y.squeeze())
+        weights = torch.exp((test_function.Y.squeeze() - test_function.Y.mean()) / (test_function.Y.std() + 1e-7))
         sampler = WeightedRandomSampler(weights, len(weights), replacement=True)
         data_loader = DataLoader(test_function, batch_size=train_batch_size, sampler=sampler)
         
         # proxy_model = Proxy(x_dim=dim, hidden_dim=128, dropout_prob=0.1, num_hidden_layers=2).to(dtype=dtype, device=device)
-        if args.uncertainty_estimation == "ensemble":
-            proxy_model_ens = ProxyEnsemble(x_dim=dim, hidden_dim=args.proxy_hidden_dim, num_hidden_layers=3, n_ensembles=args.num_ensembles, ucb_reward=True).to(dtype=dtype, device=device)
-            proxy_model_ens.gamma = args.gamma
-            for proxy_model in proxy_model_ens.models:
-                proxy_model_optimizer = torch.optim.Adam(proxy_model.parameters(), lr=1e-3)
-                for epoch in tqdm(range(num_proxy_epochs), dynamic_ncols=True):
-                    total_loss = 0.0
-                    for x, y in data_loader:
-                        x = (x - test_function.X_mean) / (test_function.X_std + 1e-7)
-                        x += torch.randn_like(x) * 0.001
-                        y = (y - test_function.Y_mean) / (test_function.Y_std + 1e-7)
-                        proxy_model_optimizer.zero_grad()
-                        loss = proxy_model.compute_loss(x, y)
-                        loss.backward()
-                        proxy_model_optimizer.step()
-                        total_loss += loss.item()
-        else:
-            if args.uncertainty_estimation == "dropout":
-                proxy_model_ens = ProxyMCDropout(x_dim=dim, hidden_dim=args.proxy_hidden_dim, num_hidden_layers=3, dropout_rate=0.1, dtype=dtype).to(dtype=dtype, device=device)
-                proxy_model_ens.gamma = args.gamma
-            else:
-                proxy_model_ens = Proxy(x_dim=dim, hidden_dim=args.proxy_hidden_dim, num_hidden_layers=3).to(dtype=dtype, device=device)
-                proxy_model_ens.gamma = 0.0 
-                proxy_model_optimizer = torch.optim.Adam(proxy_model_ens.parameters(), lr=1e-3)
-                for epoch in tqdm(range(num_proxy_epochs), dynamic_ncols=True):
-                    total_loss = 0.0
-                    for x, y in data_loader:
-                        x = (x - test_function.X_mean) / (test_function.X_std + 1e-7)
-                        x += torch.randn_like(x) * 0.001
-                        y = (y - test_function.Y_mean) / (test_function.Y_std + 1e-7)
-                        proxy_model_optimizer.zero_grad()
-                        loss = proxy_model_ens.compute_loss(x, y)
-                        loss.backward()
-                        proxy_model_optimizer.step()
-                        total_loss += loss.item()
+        proxy_model_ens = ProxyEnsemble(x_dim=dim, hidden_dim=args.proxy_hidden_dim, num_hidden_layers=3, n_ensembles=args.num_ensembles, ucb_reward=True).to(dtype=dtype, device=device)
+        proxy_model_ens.gamma = args.gamma
+        for proxy_model in proxy_model_ens.models:
+            proxy_model_optimizer = torch.optim.Adam(proxy_model.parameters(), lr=1e-3)
+            for epoch in tqdm(range(num_proxy_epochs), dynamic_ncols=True):
+                total_loss = 0.0
+                for x, y in data_loader:
+                    x = (x - test_function.X_mean) / (test_function.X_std + 1e-7)
+                    x += torch.randn_like(x) * 0.001
+                    y = (y - test_function.Y_mean) / (test_function.Y_std + 1e-7)
+                    proxy_model_optimizer.zero_grad()
+                    loss = proxy_model.compute_loss(x, y)
+                    loss.backward()
+                    proxy_model_optimizer.step()
+                    total_loss += loss.item()
+
         print(f"Round: {round+1}\tProxy model trained")
         
         
@@ -212,7 +181,7 @@ if __name__ == "__main__":
         else: # 
             M = 1
             
-        for _ in tqdm(range(M)): #NOTE M**2 samples proposal.
+        for _ in tqdm(range(M)): #NOTE B * M**2 samples proposal.
             # Split into batches due to memory constraints
             X_sample, logpf_pi, logpf_p = posterior_model.sample(bs=batch_size * M, device=device)
             logpf_pi = posterior_model.compute_marginal_likelihood(X_sample)
@@ -284,7 +253,7 @@ if __name__ == "__main__":
             save_len = min(len(Y_total) // 1000 * 1000, args.max_evals)
             save_np = Y_total[:save_len]
         
-            if args.abalation == "":
+            if args.ablation == "":
                 if not os.path.exists(f"./baselines/results/dibo"):
                     os.makedirs(f"./baselines/results/dibo", exist_ok=True)
                 np.save(
@@ -292,17 +261,11 @@ if __name__ == "__main__":
                     np.array(save_np),
                 )
             else:
-                if not os.path.exists(f"./baselines/results/abalations"):
-                    os.makedirs(f"./baselines/results/abalations", exist_ok=True)
-                if not os.path.exists(f"./baselines/results/abalations/{args.abalation}"):
-                    os.makedirs(f"./baselines/results/abalations/{args.abalation}", exist_ok=True)
-                if args.uncertainty_estimation == "ensemble":
-                    np.save(
-                        f"./baselines/results/abalations/{args.abalation}/{task}_{dim}_{seed}_{n_init}_{args.batch_size}_{args.buffer_size}_{args.diffusion_steps}_{args.alpha}_{args.gamma}_{args.num_ensembles}_{args.local_search}_{args.local_search_epochs}_{args.reweighting}_{args.filtering}_{args.training_posterior}_{args.num_proposals}_{args.num_posterior_epochs}_{args.max_evals}_{save_len}.npy",
-                        np.array(save_np),
-                    )
-                else:
-                    np.save(
-                        f"./baselines/results/abalations/{args.abalation}/{task}_{dim}_{seed}_{n_init}_{args.batch_size}_{args.buffer_size}_{args.diffusion_steps}_{args.alpha}_{args.gamma}_{args.num_ensembles}_{args.local_search}_{args.local_search_epochs}_{args.reweighting}_{args.filtering}_{args.training_posterior}_{args.num_proposals}_{args.num_posterior_epochs}_{args.uncertainty_estimation}_{args.max_evals}_{save_len}.npy",
-                        np.array(save_np),
-                    )
+                if not os.path.exists(f"./baselines/results/ablations"):
+                    os.makedirs(f"./baselines/results/ablations", exist_ok=True)
+                if not os.path.exists(f"./baselines/results/ablations/{args.ablation}"):
+                    os.makedirs(f"./baselines/results/ablations/{args.ablation}", exist_ok=True)
+                np.save(
+                    f"./baselines/results/ablations/{args.ablation}/{task}_{dim}_{seed}_{n_init}_{args.batch_size}_{args.buffer_size}_{args.diffusion_steps}_{args.alpha}_{args.gamma}_{args.num_ensembles}_{args.local_search}_{args.local_search_epochs}_{args.reweighting}_{args.filtering}_{args.training_posterior}_{args.num_proposals}_{args.num_posterior_epochs}_{args.max_evals}_{save_len}.npy",
+                    np.array(save_np),
+                )
