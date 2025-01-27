@@ -69,7 +69,7 @@ HalfCheetah
 for seed in 0 1 2 3; do
    CUDA_VISIBLE_DEVICES=$seed python baselines/algorithms/dibo.py --task Levy --dim 102 --batch_size 50\
        --n_init 100 --max_evals 2000 --seed $seed --num_proxy_epochs 50 --num_prior_epochs 50 --num_posterior_epochs 50\
-       --local_search True --alpha 1e-4 --local_search_epochs 10 --diffusion_steps 30 --buffer_size 500 &
+       --local_search True --alpha 1e-4 --local_search_epochs 10 --diffusion_steps 30 --buffer_size 300 &
 done
 
 wait
@@ -78,7 +78,7 @@ RoverPlanning
 for seed in 0 1 2 3; do
    CUDA_VISIBLE_DEVICES=$seed python baselines/algorithms/dibo.py --task Levy --dim 100 --batch_size 50\
        --n_init 100 --max_evals 2000 --seed $seed --num_proxy_epochs 50 --num_prior_epochs 50 --num_posterior_epochs 50\
-       --local_search True --alpha 1e-5 --local_search_epochs 30 --diffusion_steps 30 --buffer_size 500 &
+       --local_search True --alpha 1e-5 --local_search_epochs 30 --diffusion_steps 30 --buffer_size 300 &
 done
 
 wait
@@ -87,7 +87,7 @@ DNA
 for seed in 0 1 2 3; do
    CUDA_VISIBLE_DEVICES=$seed python baselines/algorithms/dibo.py --task Levy --dim 180 --batch_size 50\
        --n_init 100 --max_evals 2000 --seed $seed --num_proxy_epochs 50 --num_prior_epochs 50 --num_posterior_epochs 50\
-       --local_search True --alpha 1e-5 --local_search_epochs 50 --diffusion_steps 30 --buffer_size 500 &
+       --local_search True --alpha 1e-5 --local_search_epochs 50 --diffusion_steps 30 --buffer_size 300 &
 done
 
 wait
