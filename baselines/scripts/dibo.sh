@@ -65,7 +65,7 @@ done
 
 wait
 
-HalfCheetah
+#HalfCheetah
 for seed in 0 1 2 3; do
    CUDA_VISIBLE_DEVICES=$seed python baselines/algorithms/dibo.py --task HalfCheetah --dim 102 --batch_size 50\
        --n_init 100 --max_evals 2000 --seed $seed --num_proxy_epochs 50 --num_prior_epochs 50 --num_posterior_epochs 50\
@@ -74,7 +74,7 @@ done
 
 wait
 
-RoverPlanning
+#RoverPlanning
 for seed in 0 1 2 3; do
    CUDA_VISIBLE_DEVICES=$seed python baselines/algorithms/dibo.py --task RoverPlanning --dim 100 --batch_size 50\
        --n_init 100 --max_evals 2000 --seed $seed --num_proxy_epochs 50 --num_prior_epochs 50 --num_posterior_epochs 50\
@@ -83,7 +83,7 @@ done
 
 wait
 
-DNA
+#DNA
 for seed in 0 1 2 3; do
    CUDA_VISIBLE_DEVICES=$seed python baselines/algorithms/dibo.py --task DNA --dim 180 --batch_size 50\
        --n_init 100 --max_evals 2000 --seed $seed --num_proxy_epochs 50 --num_prior_epochs 50 --num_posterior_epochs 50\

@@ -9,36 +9,36 @@ from torch.utils.data import DataLoader, WeightedRandomSampler
 
 from baselines.models.diffusion import QFlow, DiffusionModel
 from baselines.functions.test_function import TestFunction
-from baselines.models.value_functions import ProxyEnsemble, ProxyMCDropout, Proxy 
-from baselines.utils import set_seed, get_value_based_weights, get_rank_based_weights
+from baselines.models.value_functions import ProxyEnsemble
+from baselines.utils import set_seed
 import wandb
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--task", type=str, default="Ackley")
-    parser.add_argument("--dim", type=int, default=20)
+    parser.add_argument("--dim", type=int, default=200)
     parser.add_argument("--train_batch_size", type=int, default=256)
     parser.add_argument("--batch_size", type=int, default=100)
     parser.add_argument("--n_init", type=int, default=200)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--max_evals", type=int, default=10000)
-    parser.add_argument("--num_proxy_epochs", type=int, default=100)
-    parser.add_argument("--num_prior_epochs", type=int, default=100)
-    parser.add_argument("--num_posterior_epochs", type=int, default=100)
-    parser.add_argument("--buffer_size", type=int, default=1000)
-    parser.add_argument("--alpha", type=float, default=0.001)
-    parser.add_argument("--beta", type=float, default=1.0)
+    parser.add_argument("--num_proxy_epochs", type=int, default=50)
+    parser.add_argument("--num_prior_epochs", type=int, default=50)
+    parser.add_argument("--num_posterior_epochs", type=int, default=50)
+    parser.add_argument("--buffer_size", type=int, default=500)
+    parser.add_argument("--alpha", type=float, default=0.0001)
+    parser.add_argument("--beta", type=float, default=1.0) #Instead of beta, we tweak alpha for numerical stability = 1/beta
     parser.add_argument("--local_search", type=str, default="True") # True, False   
     parser.add_argument("--local_search_epochs", type=int, default=10)
-    parser.add_argument("--diffusion_steps", type=int, default=30)
+    parser.add_argument("--diffusion_steps", type=int, default=30) # Number of Denoising Timesteps
     parser.add_argument("--proxy_hidden_dim", type=int, default=256)
-    parser.add_argument("--gamma", type=float, default=1.0)
-    parser.add_argument("--num_ensembles", type=int, default=5)
+    parser.add_argument("--gamma", type=float, default=1.0) # UCB parameter. u(x) + gamma sigma(x)
+    parser.add_argument("--num_ensembles", type=int, default=5) 
     parser.add_argument("--filtering", type=str, default='True') # True, False
     parser.add_argument("--num_proposals", type=int, default=10)
     parser.add_argument("--training_posterior", type=str, default='both') # both, on, off
-    parser.add_argument("--ablation", type=str, default="")
-    parser.add_argument("--test_mode", type=str, default="False")
+    parser.add_argument("--ablation", type=str, default="") # For ablation study
+    parser.add_argument("--test_mode", type=str, default="False") #For testing
     args = parser.parse_args()
     if args.test_mode == "True":
         print("Test mode")
@@ -86,23 +86,19 @@ if __name__ == "__main__":
         test_function.Y_mean = test_function.Y.mean()
         test_function.Y_std = test_function.Y.std()
         
-        # Re-weighting for the training set (it seems cruical for the performance)
-        # Prior implementation is for offline setting, so we should consider low-scoring regions to prevent deviation from the offline dataset
-        # However, it is not necessary for online setting
         weights = torch.exp((test_function.Y.squeeze() - test_function.Y.mean()) / (test_function.Y.std() + 1e-7))
         sampler = WeightedRandomSampler(weights, len(weights), replacement=True)
         data_loader = DataLoader(test_function, batch_size=train_batch_size, sampler=sampler)
         
-        # proxy_model = Proxy(x_dim=dim, hidden_dim=128, dropout_prob=0.1, num_hidden_layers=2).to(dtype=dtype, device=device)
         proxy_model_ens = ProxyEnsemble(x_dim=dim, hidden_dim=args.proxy_hidden_dim, num_hidden_layers=3, n_ensembles=args.num_ensembles, ucb_reward=True).to(dtype=dtype, device=device)
-        proxy_model_ens.gamma = args.gamma
+        proxy_model_ens.gamma = args.gamma # Set gamma here
         for proxy_model in proxy_model_ens.models:
             proxy_model_optimizer = torch.optim.Adam(proxy_model.parameters(), lr=1e-3)
             for epoch in tqdm(range(num_proxy_epochs), dynamic_ncols=True):
                 total_loss = 0.0
                 for x, y in data_loader:
                     x = (x - test_function.X_mean) / (test_function.X_std + 1e-7)
-                    x += torch.randn_like(x) * 0.001
+                    x += torch.randn_like(x) * 0.001 
                     y = (y - test_function.Y_mean) / (test_function.Y_std + 1e-7)
                     proxy_model_optimizer.zero_grad()
                     loss = proxy_model.compute_loss(x, y)
@@ -113,7 +109,6 @@ if __name__ == "__main__":
         print(f"Round: {round+1}\tProxy model trained")
         
         
-        # There is no big difference in the performance with different diffusion steps
         prior_model = DiffusionModel(x_dim=dim, diffusion_steps=args.diffusion_steps).to(dtype=dtype, device=device)
         prior_model.dtype=dtype
         prior_model_optimizer = torch.optim.Adam(prior_model.parameters(), lr=1e-3)
@@ -135,7 +130,6 @@ if __name__ == "__main__":
         posterior_model = QFlow(x_dim=dim, diffusion_steps=args.diffusion_steps, q_net=proxy_model_ens, bc_net=prior_model, alpha=alpha, beta=beta).to(dtype=dtype, device=device)
         posterior_model_optimizer = torch.optim.Adam(posterior_model.parameters(), lr=1e-4)
         
-        # xs = torch.tensor(test_function.X, dtype=dtype, device=device)
         xs = test_function.X.clone().detach()
         xs = (xs - test_function.X_mean) / (test_function.X_std + 1e-7)
         ys = proxy_model_ens.log_reward(xs)
