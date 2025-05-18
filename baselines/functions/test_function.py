@@ -8,11 +8,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from torch.quasirandom import SobolEngine
-# from baselines.functions import mujoco_gym_env
-from baselines.functions.lunar_landing import Lunarlanding
 from baselines.functions.rover_planning import Rover
 from baselines.functions.mujoco import MujucoPolicyFunc
-# from baselines.functions.mujoco_gym_env import MujocoGymEnv
 from baselines.functions.lasso_benchmark import LassoDNABenchmark
 
 

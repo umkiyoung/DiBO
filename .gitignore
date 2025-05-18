@@ -6,7 +6,6 @@
 
 # Ignore the wandb folder
 wandb/
-cma-baxus_results/
 
 # Python cache files
 __pycache__/

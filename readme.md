@@ -1,7 +1,8 @@
-# Posterior Inference with Diffusion Models for High-dimensional Black-box Optimization
+# Posterior Inference with Diffusion Models for High-dimensional Black-box Optimization (DiBO)
 
-**Conference:** ICML 2025
-**Method:** DiBO
+**Conference:** Accepted in ICML 2025
+
+
 **Paper:** [OpenReview Link](https://openreview.net/forum?id=7VzwNqQu9x)
 
 ## 📖 Overview
